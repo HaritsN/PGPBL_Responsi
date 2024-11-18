@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, TextInput, Button, StyleSheet, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView, View, TextInput, Button, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faGraduationCap, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faGraduationCap, faChevronRight, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 const Createdata = () => {
   const jsonUrl = 'http://10.0.2.2:3000/mahasiswa';
   const [dataUser, setDataUser] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setLoading] = useState(true);
-  const [refresh, setRefresh] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFormVisible, setFormVisible] = useState(false);
 
   // States for form inputs
   const [first_name, setFirstName] = useState('');
@@ -21,12 +23,17 @@ const Createdata = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [dataUser, searchQuery]);
+
   const fetchData = () => {
     setLoading(true);
     fetch(jsonUrl)
       .then((response) => response.json())
       .then((json) => {
         setDataUser(json);
+        setFilteredData(json);
       })
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
@@ -77,53 +84,82 @@ const Createdata = () => {
     setKelas(item.kelas);
     setGender(item.gender);
     setEmail(item.email);
+    setFormVisible(true);
   };
 
-  const refreshPage = () => {
-    setRefresh(true);
-    fetchData();
-    setRefresh(false);
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (query) {
+      const filtered = dataUser.filter((item) =>
+        Object.values(item)
+          .join(' ')
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      );
+      setFilteredData(filtered);
+    } else {
+      setFilteredData(dataUser);
+    }
+  };
+
+  const toggleFormVisibility = () => {
+    setFormVisible(!isFormVisible);
   };
 
   const renderForm = () => (
     <View style={styles.form}>
-      <Text style={styles.title}>{selectedUser ? 'Edit Data Mahasiswa' : 'Edit Data Mahasiswa'}</Text>
-      <TextInput style={styles.input} placeholder="Nama Depan" value={first_name} onChangeText={setFirstName} />
-      <TextInput style={styles.input} placeholder="Nama Belakang" value={last_name} onChangeText={setLastName} />
-      <TextInput style={styles.input} placeholder="Kelas" value={kelas} onChangeText={setKelas} />
-      <TextInput style={styles.input} placeholder="Jenis Kelamin" value={gender} onChangeText={setGender} />
-      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
-      <Button title={selectedUser ? "Update" : "Simpan"} onPress={handleSubmit} />
+      <Text style={styles.formHeader}>Form Data</Text>
+      <TextInput style={styles.input} placeholder="Nama Depan" value={first_name} onChangeText={(value) => setFirstName(value)} />
+      <TextInput style={styles.input} placeholder="Nama Belakang" value={last_name} onChangeText={(value) => setLastName(value)} />
+      <TextInput style={styles.input} placeholder="Kelas" value={kelas} onChangeText={(value) => setKelas(value)} />
+      <TextInput style={styles.input} placeholder="Jenis Kelamin" value={gender} onChangeText={(value) => setGender(value)} />
+      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={(value) => setEmail(value)} />
+      <Button title="Simpan" color="#1E88E5" onPress={handleSubmit} />
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        ListHeaderComponent={renderForm}
-        data={dataUser}
-        onRefresh={refreshPage}
-        refreshing={refresh}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => selectItem(item)}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Edit Data</Text>
+      </View>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Cari data..."
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
+      <TouchableOpacity onPress={toggleFormVisibility} style={styles.toggleButton}>
+        <Text style={styles.toggleButtonText}>
+          {isFormVisible ? 'Sembunyikan Form' : 'Tampilkan Form'}
+        </Text>
+        <FontAwesomeIcon
+          icon={isFormVisible ? faChevronUp : faChevronDown}
+          size={20}
+          color="#333"
+        />
+      </TouchableOpacity>
+      {isFormVisible && renderForm()}
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        {filteredData.map((item) => (
+          <TouchableOpacity key={item.id} onPress={() => selectItem(item)}>
             <View style={styles.card}>
               <View style={styles.avatar}>
-                <FontAwesomeIcon icon={faGraduationCap} size={40} color="#333" />
+                <FontAwesomeIcon icon={faGraduationCap} size={40} color="#1E88E5" />
               </View>
               <View style={styles.cardContent}>
                 <Text style={styles.cardtitle}>{item.first_name} {item.last_name}</Text>
-                <Text>{item.kelas}</Text>
-                <Text>{item.gender}</Text>
-                <Text>{item.email}</Text>
+                <Text style={styles.cardText}>{item.kelas}</Text>
+                <Text style={styles.cardText}>{item.gender}</Text>
+                <Text style={styles.cardText}>{item.email}</Text>
               </View>
               <View style={styles.iconEdit}>
-                <FontAwesomeIcon icon={faChevronRight} size={20} color="#333" />
+                <FontAwesomeIcon icon={faChevronRight} size={20} color="#1E88E5" />
               </View>
             </View>
           </TouchableOpacity>
-        )}
-      />
+        ))}
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -131,27 +167,47 @@ const Createdata = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f4f4f4',
   },
-  title: {
-    paddingVertical: 12,
-    backgroundColor: '#333',
-    color: 'white',
-    fontSize: 20,
+  header: {
+    backgroundColor: '#1E88E5',
+    padding: 15,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 24,
+    color: '#fff',
     fontWeight: 'bold',
-    textAlign: 'center',
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 8,
+    margin: 10,
+    backgroundColor: '#fff',
   },
   form: {
     padding: 10,
     marginBottom: 20,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginHorizontal: 10,
+    elevation: 2,
+  },
+  formHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#1E88E5',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#777',
+    borderColor: '#ddd',
     borderRadius: 8,
     padding: 8,
-    width: '100%',
     marginVertical: 5,
+    backgroundColor: '#f9f9f9',
   },
   card: {
     flexDirection: 'row',
@@ -159,9 +215,9 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 5,
     marginHorizontal: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
     borderRadius: 8,
-    elevation: 2,
+    elevation: 3,
   },
   cardContent: {
     flex: 1,
@@ -170,6 +226,11 @@ const styles = StyleSheet.create({
   cardtitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#333',
+  },
+  cardText: {
+    fontSize: 14,
+    color: '#555',
   },
   avatar: {
     justifyContent: 'center',
@@ -179,6 +240,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingRight: 10,
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    marginHorizontal: 10,
+    marginVertical: 5,
+    backgroundColor: '#1E88E5',
+    borderRadius: 8,
+    elevation: 2,
+  },
+  toggleButtonText: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  scrollView: {
+    paddingBottom: 20,
   },
 });
 

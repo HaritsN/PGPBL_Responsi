@@ -1,84 +1,143 @@
-import React, {useState} from 'react'
-import { SafeAreaView, View, ScrollView, TextInput, Button, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, View, ScrollView, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 
 const Createdata = () => {
-const jsonUrl = 'http://10.0.2.2:3000/mahasiswa';
-const [first_name, setFirstName] = useState('');
-const [last_name, setLastName] = useState('');
-const [kelas, setKelas] = useState('');
-const [gender, setGender] = useState('');
-const [email, setEmail] = useState('');
+  const jsonUrl = 'http://10.0.2.2:3000/mahasiswa';
+  const [first_name, setFirstName] = useState('');
+  const [last_name, setLastName] = useState('');
+  const [kelas, setKelas] = useState('');
+  const [gender, setGender] = useState('');
+  const [email, setEmail] = useState('');
 
-const submit = () => {
-   const data = {
-     first_name: first_name,
-     last_name: last_name,
-     email: email,
-     kelas: kelas,
-     gender: gender,
-   };
-   fetch('http://10.0.2.2:3000/mahasiswa', {
-     method: 'POST',
-     headers: {
-       'Accept': 'application/json',
-       'Content-Type': 'application/json'
-     },
-     body: JSON.stringify(data)
-   })
-   .then((response) => response.json())
-      .then((json) => {
-        console.log(json);
-        alert('Jos Jis leeeee');
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setKelas('');
-        setGender('');
-      })
+  const submit = () => {
+    if (!first_name || !last_name || !kelas || !gender || !email) {
+      Alert.alert('Error', 'Semua bidang wajib diisi.');
+      return;
     }
 
- return (
-  <SafeAreaView>
-   <View>
-    <Text style={ styles.title }>Tambah Data Mahasiswa</Text>
-     <ScrollView style={ styles.form }>
-      <TextInput style={ styles.input } placeholder="Nama Depan" value={first_name} onChangeText={(value) => setFirstName(value)} />
-      <TextInput style={ styles.input } placeholder="Nama Belakang" value={last_name} onChangeText={(value) => setLastName(value)} />
-      <TextInput style={ styles.input } placeholder="Kelas" value={kelas} onChangeText={(value) => setKelas(value)} />
-      <TextInput style={ styles.input } placeholder="Jenis Kelamin" value={gender} onChangeText={(value) => setGender(value)} />
-      <TextInput style={ styles.input } placeholder="Email" value={email} onChangeText={(value) => setEmail(value)} />
-      <Button title="Simpan" style={styles.button} onPress={submit} />
-     </ScrollView>
-   </View>
-  </SafeAreaView>
- )
+    const data = {
+      first_name,
+      last_name,
+      kelas,
+      gender,
+      email,
+    };
 
-}
+    fetch(jsonUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(() => {
+        Alert.alert('Berhasil', 'Data berhasil ditambahkan!');
+        clearForm();
+      })
+      .catch(() => {
+        Alert.alert('Gagal', 'Terjadi kesalahan, coba lagi.');
+      });
+  };
 
-export default Createdata
+  const clearForm = () => {
+    setFirstName('');
+    setLastName('');
+    setKelas('');
+    setGender('');
+    setEmail('');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Tambah Data Mahasiswa</Text>
+      <ScrollView contentContainerStyle={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Nama Depan"
+          value={first_name}
+          onChangeText={setFirstName}
+          placeholderTextColor="#888"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Nama Belakang"
+          value={last_name}
+          onChangeText={setLastName}
+          placeholderTextColor="#888"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Kelas"
+          value={kelas}
+          onChangeText={setKelas}
+          placeholderTextColor="#888"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Jenis Kelamin"
+          value={gender}
+          onChangeText={setGender}
+          placeholderTextColor="#888"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          placeholderTextColor="#888"
+        />
+        <TouchableOpacity style={styles.button} onPress={submit}>
+          <Text style={styles.buttonText}>Simpan</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+export default Createdata;
 
 const styles = StyleSheet.create({
- title: {
-   paddingVertical: 12,
-   backgroundColor: '#333',
-   color: 'white',
-   fontSize: 20,
-   fontWeight: 'bold',
-   textAlign: 'center',
- },
- form: {
-   padding: 10,
-   marginBottom: 100,
- },
- input: {
+  container: {
+    flex: 1,
+    backgroundColor: '#F6F9FC',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    paddingVertical: 15,
+    backgroundColor: '#1E88E5',
+    marginBottom: 10,
+  },
+  form: {
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+  },
+  input: {
     borderWidth: 1,
-    borderColor: '#777',
+    borderColor: '#CCC',
     borderRadius: 8,
-    padding: 8,
-    width: '100%',
-    marginVertical: 5,
+    padding: 12,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 15,
+    elevation: 1,
   },
   button: {
-    marginVertical: 10,
-  }
- })
+    backgroundColor: '#1E88E5',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+});
