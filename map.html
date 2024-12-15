@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Peta Interaktif dengan Marker dan Form Input</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        background-color: #121212;
+        color: #f1f1f1;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+
+      .header {
+        background-color: #333;
+        padding: 10px 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 30px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 270px;
+        z-index: 1000;
+      }
+
+      .search-box {
+        width: 200%;
+        padding: 5px;
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+        border-radius: 30px;
+        font-size: 16px;
+      }
+
+      .search-box:focus {
+        outline: none;
+        border-color: #2196f3;
+      }
+
+      #add-point-btn,
+      #refresh-btn,
+      #next-btn {
+        position: absolute;
+        bottom: 20px;
+        z-index: 1000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        padding: 20px;
+        width: 60px;
+        height: 60px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+      }
+
+      #add-point-btn {
+        left: 20px;
+        background-color: #2196f3;
+        color: #fff;
+      }
+
+      /* Tombol "Next" di posisi sebelah kanan tengah */
+      #next-btn {
+        right: 80px; /* Tukar posisi ke kanan tengah */
+        background-color: #ff9800;
+        color: #fff;
+        display: none;
+      }
+
+      /* Tombol "Refresh" di kanan bawah */
+      #refresh-btn {
+        right: 20px; /* Tukar posisi ke kanan bawah */
+        background-color: #4caf50;
+        color: #fff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <input
+        class="search-box"
+        type="text"
+        id="search-box"
+        placeholder="Cari Toko Musik..."
+        oninput="searchLocations()" />
+    </div>
+
+    <!-- Map -->
+    <div id="map"></div>
+
+    <!-- Floating Buttons -->
+    <button id="add-point-btn">
+      <span class="material-icons">add_location</span>
+    </button>
+    <button id="refresh-btn">
+      <span class="material-icons">refresh</span>
+    </button>
+    <button id="next-btn">
+      <span class="material-icons">navigate_next</span>
+    </button>
+
+    <!-- Leaflet Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      // Inisialisasi Peta
+      var map = L.map('map').setView([-6.178305, 106.631888], 12);
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        {
+          maxZoom: 18,
+        },
+      ).addTo(map);
+
+      var geoJsonStyle = {
+        color: '#FFB300',
+        weight: 2,
+        fillColor: '#FFD700',
+        fillOpacity: 0.5,
+      };
+
+      // Memuat GeoJSON
+      fetch('https://haritsn.github.io/Tangerang.geojson/Tangerang.geojson')
+        .then(response => response.json())
+        .then(geojsonData => {
+          L.geoJSON(geojsonData, {
+            style: geoJsonStyle,
+            onEachFeature: function (feature, layer) {
+              if (feature.properties && feature.properties.WADMKC) {
+                layer.bindPopup(
+                  `<strong>Kecamatan:</strong> ${feature.properties.WADMKC}`,
+                );
+              }
+            },
+          }).addTo(map);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+
+      var searchResults = [];
+      var currentIndex = 0;
+
+      // Fungsi untuk menampilkan semua marker
+      function loadData() {
+        fetch('http://10.0.2.2:3000/mahasiswa') // Ganti URL sesuai backend
+          .then(res => res.json())
+          .then(data => {
+            data.forEach(item => {
+              const marker = L.marker([item.latitude, item.longitude]).addTo(
+                map,
+              );
+              marker.bindPopup(
+                `<strong>${item.nama}</strong><br>
+                 Rating: ${item.rating}<br>
+                 Kategori: ${item.kategori}<br>
+                 ${item.alamat}<br>
+                 <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" 
+                    target="_blank" 
+                    style="color:#2196f3; text-decoration:none; font-weight:bold;">
+                    Buka di Google Maps
+                 </a>`,
+              );
+            });
+          })
+          .catch(error => console.error('Error loading data:', error));
+      }
+
+      // Pencarian Lokasi
+      function searchLocations() {
+        var searchTerm = document
+          .getElementById('search-box')
+          .value.toLowerCase();
+
+        // Hapus marker sebelumnya
+        map.eachLayer(layer => {
+          if (layer instanceof L.Marker) map.removeLayer(layer);
+        });
+
+        fetch('http://10.0.2.2:3000/mahasiswa')
+          .then(res => res.json())
+          .then(data => {
+            const filteredData = data.filter(item =>
+              item.nama.toLowerCase().includes(searchTerm),
+            );
+
+            if (filteredData.length > 0) {
+              searchResults = filteredData;
+              currentIndex = 0;
+              document.getElementById('next-btn').style.display = 'block';
+              showNextMarker();
+            } else {
+              searchResults = [];
+              document.getElementById('next-btn').style.display = 'none';
+              alert('Lokasi tidak ditemukan');
+            }
+          });
+      }
+
+      // Navigasi ke marker selanjutnya
+      function showNextMarker() {
+        if (searchResults.length === 0) return;
+
+        map.eachLayer(layer => {
+          if (layer instanceof L.Marker) map.removeLayer(layer);
+        });
+
+        const item = searchResults[currentIndex];
+        const marker = L.marker([item.latitude, item.longitude]).addTo(map);
+        marker.bindPopup(
+          `<strong>${item.nama}</strong><br>
+           Rating: ${item.rating}<br>
+           Kategori: ${item.kategori}<br>
+           ${item.alamat}<br>
+           <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" 
+              target="_blank" 
+              style="color:#2196f3; text-decoration:none; font-weight:bold;">
+              Buka di Google Maps
+           </a>`,
+        );
+
+        map.setView([item.latitude, item.longitude], 14);
+        marker.openPopup();
+      }
+
+      // Tombol Navigasi dan Refresh
+      document.getElementById('next-btn').addEventListener('click', () => {
+        if (searchResults.length === 0) return;
+        currentIndex = (currentIndex + 1) % searchResults.length;
+        showNextMarker();
+      });
+
+      document.getElementById('refresh-btn').addEventListener('click', () => {
+        map.eachLayer(layer => {
+          if (layer instanceof L.Marker) map.removeLayer(layer);
+        });
+        loadData();
+        document.getElementById('next-btn').style.display = 'none';
+      });
+
+      // Load semua marker saat halaman pertama kali dimuat
+      document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+      });
+    </script>
+  </body>
+</html>
