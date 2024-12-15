@@ -22,7 +22,12 @@ Aplikasi ini dirancang untuk mendukung musisi dan pecinta musik di Tangerang aga
 
 ## **Fitur**
 
-1. **Persebaran Toko Musik**
+1. **Tampilan Awal yang Menarik**
+
+   - Antarmuka yang ramah pengguna dengan navigasi sederhana.  
+     <img src="images/5.png" alt="Tampilan Awal" width="200px"/>
+
+2. **Persebaran Toko Musik**
 
    - Cari toko alat musik dengan fitur **Search**.
 
@@ -30,11 +35,6 @@ Aplikasi ini dirancang untuk mendukung musisi dan pecinta musik di Tangerang aga
 
    - Tambahkan titik lokasi toko musik menggunakan tombol biru di antarmuka peta.  
      <img src="images/1.png" alt="Persebaran Toko Musik" width="200px"/>
-
-2. **Tampilan Awal yang Menarik**
-
-   - Antarmuka yang ramah pengguna dengan navigasi sederhana.  
-     <img src="images/5.png" alt="Tampilan Awal" width="200px"/>
 
 3. **List Data Toko Musik**
 
