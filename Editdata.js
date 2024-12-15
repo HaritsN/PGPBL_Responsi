@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, TextInput, StyleSheet, Text, TouchableOpacity, ScrollView, ImageBackground, RefreshControl, Alert } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faMusic, faChevronUp, faChevronDown, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faMusic, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Createdata = () => {
   const jsonUrl = 'http://10.0.2.2:3000/mahasiswa';
   const [dataUser, setDataUser] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -27,7 +26,7 @@ const Createdata = () => {
   }, [dataUser, searchQuery]);
 
   const fetchData = () => {
-    setRefreshing(true); // Set refreshing to true when the refresh starts
+    setRefreshing(true);
     fetch(jsonUrl)
       .then((response) => response.json())
       .then((json) => {
@@ -35,12 +34,11 @@ const Createdata = () => {
         setFilteredData(json);
       })
       .catch((error) => console.error(error))
-      .finally(() => setRefreshing(false)); // Set refreshing to false when the fetch is done
+      .finally(() => setRefreshing(false));
   };
 
   const deleteData = (id) => {
     fetch(`${jsonUrl}/${id}`, { method: 'DELETE' })
-      .then((response) => response.json())
       .then(() => {
         Alert.alert('Data terhapus', 'Data berhasil dihapus.');
         fetchData();
@@ -66,41 +64,10 @@ const Createdata = () => {
     }
   };
 
-  const renderCard = (item) => (
-    <View key={item.id} style={styles.card}>
-      <View style={styles.avatar}>
-        <FontAwesomeIcon icon={faMusic} size={40} color="#fff" />
-      </View>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.nama}</Text>
-        <Text style={styles.cardText}>Rating: {item.rating}</Text>
-        <Text style={styles.cardText}>Kategori: {item.kategori}</Text>
-        <Text style={styles.cardText}>Alamat: {item.alamat}</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() =>
-          Alert.alert('Hapus Data', 'Yakin ingin menghapus data ini?', [
-            { text: 'Batal', style: 'cancel' },
-            { text: 'Hapus', onPress: () => deleteData(item.id) },
-          ])
-        }
-      >
-        <FontAwesomeIcon icon={faTrash} size={20} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.editButton}
-        onPress={() => handleEdit(item)}
-      >
-        <FontAwesomeIcon icon={faChevronUp} size={20} color="#fff" />
-      </TouchableOpacity>
-    </View>
-  );
-
   const handleEdit = (item) => {
     setEditingId(item.id);
     setNama(item.nama);
-    setRating(item.rating);
+    setRating(String(item.rating)); // Pastikan rating diubah ke string
     setKategori(item.kategori);
     setAlamat(item.alamat);
     setFormVisible(true);
@@ -109,26 +76,29 @@ const Createdata = () => {
   const handleSave = () => {
     const updatedData = {
       nama,
-      rating,
+      rating: parseFloat(rating) || 0, // Konversi kembali ke angka jika perlu
       kategori,
       alamat,
     };
-    fetch(`${jsonUrl}/${editingId}`, {
-      method: 'PUT',
+
+    const method = editingId ? 'PUT' : 'POST';
+    const url = editingId ? `${jsonUrl}/${editingId}` : jsonUrl;
+
+    fetch(url, {
+      method: method,
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(updatedData),
     })
-      .then((response) => response.json())
       .then(() => {
-        Alert.alert('Data berhasil diperbarui');
+        Alert.alert(editingId ? 'Data berhasil diperbarui' : 'Data berhasil ditambahkan');
         fetchData();
-        clearForm(); // Clear form after saving
+        clearForm();
       })
       .catch((error) => {
         console.error(error);
-        Alert.alert('Error', 'Data gagal diperbarui, silakan coba lagi.');
+        Alert.alert('Error', 'Gagal menyimpan data, silakan coba lagi.');
       });
   };
 
@@ -150,33 +120,38 @@ const Createdata = () => {
         <TextInput
           style={styles.searchInput}
           placeholder="Cari berdasarkan nama..."
-          placeholderTextColor="#fff" // Ubah warna placeholder menjadi putih
+          placeholderTextColor="#fff"
           value={searchQuery}
           onChangeText={handleSearch}
         />
         {isFormVisible && (
           <View style={styles.form}>
             <TextInput
-              style={styles.input}
+              style={styles.darkInput}
               placeholder="Nama"
+              placeholderTextColor="#ddd"
               value={nama}
               onChangeText={setNama}
             />
             <TextInput
-              style={styles.input}
+              style={styles.darkInput}
               placeholder="Rating"
+              placeholderTextColor="#ddd"
               value={rating}
+              keyboardType="numeric"
               onChangeText={setRating}
             />
             <TextInput
-              style={styles.input}
+              style={styles.darkInput}
               placeholder="Kategori"
+              placeholderTextColor="#ddd"
               value={kategori}
               onChangeText={setKategori}
             />
             <TextInput
-              style={styles.input}
+              style={styles.darkInput}
               placeholder="Alamat"
+              placeholderTextColor="#ddd"
               value={alamat}
               onChangeText={setAlamat}
             />
@@ -194,7 +169,36 @@ const Createdata = () => {
             <RefreshControl refreshing={refreshing} onRefresh={fetchData} />
           }
         >
-          {filteredData.map((item) => renderCard(item))}
+          {filteredData.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <View style={styles.avatar}>
+                <FontAwesomeIcon icon={faMusic} size={40} color="#fff" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{item.nama}</Text>
+                <Text style={styles.cardText}>Rating: {item.rating}</Text>
+                <Text style={styles.cardText}>Kategori: {item.kategori}</Text>
+                <Text style={styles.cardText}>Alamat: {item.alamat}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => handleEdit(item)}
+              >
+                <FontAwesomeIcon icon={faChevronUp} size={20} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() =>
+                  Alert.alert('Hapus Data', 'Yakin ingin menghapus data ini?', [
+                    { text: 'Batal', style: 'cancel' },
+                    { text: 'Hapus', onPress: () => deleteData(item.id) },
+                  ])
+                }
+              >
+                <FontAwesomeIcon icon={faTrash} size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          ))}
         </ScrollView>
       </SafeAreaView>
     </ImageBackground>
@@ -202,22 +206,8 @@ const Createdata = () => {
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover', // Pastikan gambar memenuhi layar
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Warna abu-abu gelap dengan transparansi
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
+  backgroundImage: { flex: 1, resizeMode: 'cover' },
+  container: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
   searchInput: {
     borderRadius: 8,
     paddingHorizontal: 15,
@@ -225,81 +215,31 @@ const styles = StyleSheet.create({
     margin: 10,
     backgroundColor: 'rgba(50, 50, 50, 0.9)',
     fontSize: 14,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    marginVertical: 5,
-    marginHorizontal: 10,
-    backgroundColor: 'rgba(50, 50, 50, 0.9)', // Abu-abu gelap transparansi 90%
-    borderRadius: 8,
-  },
-  cardContent: {
-    flex: 1,
-    paddingHorizontal: 10,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
     color: '#fff',
   },
-  cardText: {
-    fontSize: 14,
-    color: '#ddd',
-  },
-  avatar: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  deleteButton: {
-    backgroundColor: '#E53935',
-    padding: 8,
-    borderRadius: 5,
-  },
-  editButton: {
-    backgroundColor: '#FFB300',
-    padding: 8,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  scrollView: {
-    paddingBottom: 20,
-  },
-  form: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  input: {
+  form: { padding: 20, backgroundColor: 'rgba(50, 50, 50, 0.9)', borderRadius: 10, margin: 10 },
+  darkInput: {
     height: 40,
-    borderColor: '#ddd',
+    borderColor: '#444',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 10,
     paddingLeft: 10,
-  },
-  saveButton: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  saveButtonText: {
+    backgroundColor: '#333',
     color: '#fff',
-    textAlign: 'center',
   },
-  cancelButton: {
-    backgroundColor: '#E53935',
-    padding: 10,
-    borderRadius: 5,
-  },
-  cancelButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-  },
+  saveButton: { backgroundColor: '#4CAF50', padding: 10, borderRadius: 5 },
+  saveButtonText: { color: '#fff', textAlign: 'center' },
+  cancelButton: { backgroundColor: '#E53935', padding: 10, borderRadius: 5, marginTop: 10 },
+  cancelButtonText: { color: '#fff', textAlign: 'center' },
+  scrollView: { paddingBottom: 20 },
+  card: { flexDirection: 'row', alignItems: 'center', padding: 15, margin: 5, backgroundColor: 'rgba(50, 50, 50, 0.9)', borderRadius: 8 },
+  avatar: { justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  cardContent: { flex: 1, paddingHorizontal: 10 },
+  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#fff' },
+  cardText: { fontSize: 14, color: '#ddd' },
+  editButton: { backgroundColor: '#FFB300', padding: 8, borderRadius: 5, marginRight: 5 },
+  deleteButton: { backgroundColor: '#E53935', padding: 8, borderRadius: 5 },
 });
 
 export default Createdata;
