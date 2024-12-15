@@ -1,79 +1,62 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Musik Tangerang
 
-# Getting Started
+**Musik Tangerang** adalah aplikasi untuk menemukan lokasi alat musik dan toko-toko instrumen musik di sekitar Tangerang. Aplikasi ini dibuat menggunakan **React Native** dengan fitur pemetaan geospasial yang interaktif.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## <img src="images/poster.png" alt="Musik Tangerang Banner" width="500px"/>
 
-## Step 1: Start the Metro Server
+---
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## **Fitur**
 
-To start Metro, run the following command from the _root_ of your React Native project:
+1. **Tampilan Awal yang Menarik**
 
-```bash
-# using npm
-npm start
+   - Antarmuka yang ramah pengguna dengan navigasi sederhana.  
+     <img src="images/5.png" alt="Tampilan Awal" width="200px"/>
 
-# OR using Yarn
-yarn start
-```
+2. **Persebaran Toko Musik**
 
-## Step 2: Start your Application
+   - Cari toko alat musik dengan fitur **Search**.
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+     <img src="images/3.png" alt="Search Toko Musik" width="200px"/>
 
-### For Android
+   - Tambahkan titik lokasi toko musik menggunakan tombol biru di antarmuka peta.  
+     <img src="images/1.png" alt="Persebaran Toko Musik" width="200px"/>
 
-```bash
-# using npm
-npm run android
+3. **List Data Toko Musik**
 
-# OR using Yarn
-yarn android
-```
+   - Menampilkan Data Toko Musik secara cepat.  
+     <img src="images/6.png" alt="List Data Toko Musik" width="200px"/>
 
-### For iOS
+4. **Form Update Data**
 
-```bash
-# using npm
-npm run ios
+   - Update atau tambahkan informasi toko musik secara cepat dan praktis.  
+     <img src="images/4.png" alt="Form Update Data" width="200px"/>
 
-# OR using Yarn
-yarn ios
-```
+5. **Profil Pengguna**
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+   - Menampilkan data pengguna, termasuk nama, NIM, dan media sosial.  
+     <img src="images/7.png" alt="Profil Pengguna" width="200px"/>
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+---
 
-## Step 3: Modifying your App
+## **Komponen Penyusun**
 
-Now that you have successfully run the app, let's modify it.
+Aplikasi ini dikembangkan menggunakan teknologi berikut:
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+- **[React Native](https://reactnative.dev)** - Framework utama untuk pengembangan aplikasi mobile lintas platform.
+- **[Leaflet](https://leafletjs.com/)** - Library peta untuk menampilkan dan mengelola lokasi toko musik.
+- **[GitHub](https://github.com/)** - Platform manajemen versi kode sumber dan kolaborasi.
+- **[Font Awesome](https://fontawesome.com/)** - Ikon interaktif untuk meningkatkan tampilan UI aplikasi.
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+---
 
-## Congratulations! :tada:
+## **Kredit**
 
-You've successfully run and modified your React Native App. :partying_face:
+Aplikasi ini dikembangkan oleh:
 
-### Now what?
+**Harits Nuraga Padika**  
+NIM: 22/494436/SV/20823  
+Program Studi: **D4 Sistem Informasi Geografis**  
+Praktikum: **Pemrograman Geospasial Perangkat Bergerak Lanjut**
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+---
