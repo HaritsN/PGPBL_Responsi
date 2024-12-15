@@ -82,17 +82,15 @@
         color: #fff;
       }
 
-      /* Tombol "Next" di posisi sebelah kanan tengah */
       #next-btn {
-        right: 80px; /* Tukar posisi ke kanan tengah */
+        right: 80px;
         background-color: #ff9800;
         color: #fff;
         display: none;
       }
 
-      /* Tombol "Refresh" di kanan bawah */
       #refresh-btn {
-        right: 20px; /* Tukar posisi ke kanan bawah */
+        right: 20px;
         background-color: #4caf50;
         color: #fff;
       }
@@ -100,7 +98,6 @@
   </head>
 
   <body>
-    <!-- Header -->
     <div class="header">
       <input
         class="search-box"
@@ -110,10 +107,8 @@
         oninput="searchLocations()" />
     </div>
 
-    <!-- Map -->
     <div id="map"></div>
 
-    <!-- Floating Buttons -->
     <button id="add-point-btn">
       <span class="material-icons">add_location</span>
     </button>
@@ -124,16 +119,13 @@
       <span class="material-icons">navigate_next</span>
     </button>
 
-    <!-- Leaflet Script -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
       // Inisialisasi Peta
       var map = L.map('map').setView([-6.178305, 106.631888], 12);
       L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        {
-          maxZoom: 18,
-        },
+        {maxZoom: 18},
       ).addTo(map);
 
       var geoJsonStyle = {
@@ -143,7 +135,6 @@
         fillOpacity: 0.5,
       };
 
-      // Memuat GeoJSON
       fetch('https://haritsn.github.io/Tangerang.geojson/Tangerang.geojson')
         .then(response => response.json())
         .then(geojsonData => {
@@ -165,24 +156,21 @@
 
       // Fungsi untuk menampilkan semua marker
       function loadData() {
-        fetch('http://10.0.2.2:3000/mahasiswa') // Ganti URL sesuai backend
+        fetch('http://10.0.2.2:3000/mahasiswa')
           .then(res => res.json())
           .then(data => {
             data.forEach(item => {
               const marker = L.marker([item.latitude, item.longitude]).addTo(
                 map,
               );
-              marker.bindPopup(
-                `<strong>${item.nama}</strong><br>
-                 Rating: ${item.rating}<br>
-                 Kategori: ${item.kategori}<br>
-                 ${item.alamat}<br>
-                 <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" 
-                    target="_blank" 
-                    style="color:#2196f3; text-decoration:none; font-weight:bold;">
-                    Buka di Google Maps
-                 </a>`,
-              );
+              marker.bindPopup(` 
+                <strong>${item.nama}</strong><br>
+                Rating: ${item.rating}<br>
+                Kategori: ${item.kategori}<br>
+                ${item.alamat}<br>
+                <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" target="_blank" style="color:#2196f3; text-decoration:none; font-weight:bold;">
+                  Buka di Google Maps
+                </a>`);
             });
           })
           .catch(error => console.error('Error loading data:', error));
@@ -193,8 +181,6 @@
         var searchTerm = document
           .getElementById('search-box')
           .value.toLowerCase();
-
-        // Hapus marker sebelumnya
         map.eachLayer(layer => {
           if (layer instanceof L.Marker) map.removeLayer(layer);
         });
@@ -205,7 +191,6 @@
             const filteredData = data.filter(item =>
               item.nama.toLowerCase().includes(searchTerm),
             );
-
             if (filteredData.length > 0) {
               searchResults = filteredData;
               currentIndex = 0;
@@ -219,7 +204,6 @@
           });
       }
 
-      // Navigasi ke marker selanjutnya
       function showNextMarker() {
         if (searchResults.length === 0) return;
 
@@ -229,23 +213,19 @@
 
         const item = searchResults[currentIndex];
         const marker = L.marker([item.latitude, item.longitude]).addTo(map);
-        marker.bindPopup(
-          `<strong>${item.nama}</strong><br>
-           Rating: ${item.rating}<br>
-           Kategori: ${item.kategori}<br>
-           ${item.alamat}<br>
-           <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" 
-              target="_blank" 
-              style="color:#2196f3; text-decoration:none; font-weight:bold;">
-              Buka di Google Maps
-           </a>`,
-        );
+        marker.bindPopup(`
+          <strong>${item.nama}</strong><br>
+          Rating: ${item.rating}<br>
+          Kategori: ${item.kategori}<br>
+          ${item.alamat}<br>
+          <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" target="_blank" style="color:#2196f3; text-decoration:none; font-weight:bold;">
+            Buka di Google Maps
+          </a>`);
 
         map.setView([item.latitude, item.longitude], 14);
         marker.openPopup();
       }
 
-      // Tombol Navigasi dan Refresh
       document.getElementById('next-btn').addEventListener('click', () => {
         if (searchResults.length === 0) return;
         currentIndex = (currentIndex + 1) % searchResults.length;
@@ -260,9 +240,99 @@
         document.getElementById('next-btn').style.display = 'none';
       });
 
-      // Load semua marker saat halaman pertama kali dimuat
       document.addEventListener('DOMContentLoaded', () => {
         loadData();
+      });
+
+      // Fitur Menambah Marker Baru
+      let addingPoint = false;
+      let tempMarker;
+
+      document.getElementById('add-point-btn').addEventListener('click', () => {
+        addingPoint = !addingPoint;
+
+        if (addingPoint) {
+          const onMapClick = e => {
+            if (tempMarker) {
+              map.removeLayer(tempMarker);
+            }
+
+            tempMarker = L.marker(e.latlng, {draggable: true}).addTo(map);
+            tempMarker.bindPopup(
+              'Geser marker ke lokasi yang diinginkan, lalu klik marker untuk mengisi detail.',
+            );
+            tempMarker.openPopup();
+
+            tempMarker.bindTooltip('Titik Baru').openTooltip();
+
+            tempMarker.on('click', () => {
+              const {lat, lng} = tempMarker.getLatLng();
+              console.log(lat, lng); // Memeriksa apakah latitude dan longitude tersedia
+
+              const formHtml = `
+                <div>
+                  <label>Nama:</label><br>
+                  <input type="text" id="input-nama" style="width: 100%;"><br>
+                  <label>Rating:</label><br>
+                  <input type="number" id="input-rating" style="width: 100%;" min="0" max="5"><br>
+                  <label>Kategori:</label><br>
+                  <input type="text" id="input-kategori" style="width: 100%;"><br>
+                  <label>Alamat:</label><br>
+                  <textarea id="input-alamat" style="width: 100%;"></textarea><br>
+                  <button id="save-point-btn" style="margin-top: 10px; background: #2196f3; color: #fff; border: none; padding: 5px 10px; cursor: pointer;">Simpan</button>
+                </div>
+              `;
+
+              tempMarker.bindPopup(formHtml).openPopup();
+
+              document
+                .getElementById('save-point-btn')
+                .addEventListener('click', () => {
+                  const nama = document.getElementById('input-nama').value;
+                  const rating = document.getElementById('input-rating').value;
+                  const kategori =
+                    document.getElementById('input-kategori').value;
+                  const alamat = document.getElementById('input-alamat').value;
+
+                  if (nama && rating && kategori && alamat) {
+                    fetch('http://10.0.2.2:3000/mahasiswa', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({
+                        nama,
+                        rating: parseFloat(rating),
+                        kategori,
+                        alamat,
+                        latitude: lat,
+                        longitude: lng,
+                      }),
+                    })
+                      .then(response => {
+                        if (response.ok) {
+                          alert('Titik berhasil disimpan!');
+                          map.removeLayer(tempMarker);
+                          loadData();
+                        } else {
+                          alert('Gagal menyimpan titik. Silakan coba lagi.');
+                        }
+                      })
+                      .catch(() =>
+                        alert('Terjadi kesalahan saat menghubungi server.'),
+                      );
+                  } else {
+                    alert('Semua field harus diisi!');
+                  }
+                });
+            });
+          };
+
+          map.on('click', onMapClick);
+        } else {
+          map.off('click');
+          if (tempMarker) {
+            map.removeLayer(tempMarker);
+          }
+        }
       });
     </script>
   </body>
