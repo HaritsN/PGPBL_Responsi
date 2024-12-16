@@ -159,6 +159,11 @@
         fetch('http://10.0.2.2:3000/mahasiswa')
           .then(res => res.json())
           .then(data => {
+            // Hapus semua marker yang ada sebelumnya
+            map.eachLayer(layer => {
+              if (layer instanceof L.Marker) map.removeLayer(layer);
+            });
+
             data.forEach(item => {
               const marker = L.marker([item.latitude, item.longitude]).addTo(
                 map,
@@ -233,15 +238,12 @@
       });
 
       document.getElementById('refresh-btn').addEventListener('click', () => {
-        map.eachLayer(layer => {
-          if (layer instanceof L.Marker) map.removeLayer(layer);
-        });
-        loadData();
+        loadData(); // Memanggil loadData untuk memuat ulang data marker
         document.getElementById('next-btn').style.display = 'none';
       });
 
       document.addEventListener('DOMContentLoaded', () => {
-        loadData();
+        loadData(); // Memanggil loadData saat halaman pertama kali dimuat
       });
 
       // Fitur Menambah Marker Baru
@@ -267,7 +269,6 @@
 
             tempMarker.on('click', () => {
               const {lat, lng} = tempMarker.getLatLng();
-              console.log(lat, lng); // Memeriksa apakah latitude dan longitude tersedia
 
               const formHtml = `
                 <div>
@@ -311,7 +312,7 @@
                         if (response.ok) {
                           alert('Titik berhasil disimpan!');
                           map.removeLayer(tempMarker);
-                          loadData();
+                          loadData(); // Panggil loadData() setelah menyimpan
                         } else {
                           alert('Gagal menyimpan titik. Silakan coba lagi.');
                         }
